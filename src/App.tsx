@@ -12,6 +12,7 @@ import { TableHeader } from "./components/table-header";
 import { TableRow } from "./components/table-row";
 import { TableCell } from "./components/table-cell";
 import { IconButton } from "./components/icon-button";
+import { DetailsModal } from "./components/details-modal";
 
 interface IPeople {
   name: string;
@@ -45,6 +46,8 @@ export function App() {
   });
   const [total, setTotal] = useState(0);
   const totalPages = Math.ceil(total / 10);
+  const [open, setOpen] = useState(false);
+  const [selectedPerson, setSelectedPerson] = useState<IPeople>();
 
   useEffect(() => {
     const url = new URL('https://swapi.dev/api/people/');
@@ -58,6 +61,18 @@ export function App() {
         setTotal(response.count);
       })
   }, [page]);
+
+  const openPersonDetailsModal = (person: IPeople) => {
+    console.log('oi')
+    setOpen(true);
+    setSelectedPerson(person);
+  }
+
+  const closePersonDetailsModal = () => {
+    setOpen(false);
+    setSelectedPerson(undefined);
+    console.log('close')
+  }
 
   const setCurrentPage = (page: number) => {
     const url = new URL(window.location.toString());
@@ -107,7 +122,7 @@ export function App() {
                 <TableCell>{person.gender}</TableCell>
                 <TableCell>
                   <IconButton transparent>
-                    <MoreHorizontal className="size-4" />
+                    <MoreHorizontal className="size-4" onClick={() => openPersonDetailsModal(person)} />
                   </IconButton>
                 </TableCell>
               </TableRow>
@@ -142,6 +157,61 @@ export function App() {
           </TableRow>
         </tfoot>
       </Table>
+      {open && (
+        <DetailsModal>
+          <div className="inline-flex self-end">
+            <button onClick={closePersonDetailsModal}>
+              <X className="size-4" />
+            </button>
+          </div>
+          <div className="flex flex-col gap-2">
+            <span>Name: {selectedPerson?.name}</span>
+            <span>Height: {selectedPerson?.height} cm</span>
+            <span>Mass: {selectedPerson?.mass} kg</span>
+            <span>Hair color: {selectedPerson?.hair_color}</span>
+            <span>Skin color: {selectedPerson?.skin_color}</span>
+            <span>Eye_color: {selectedPerson?.eye_color}</span>
+            <span>Birth year: {selectedPerson?.birth_year}</span>
+            <span>Gender: {selectedPerson?.gender}</span>
+            <span>Homeworld: {selectedPerson?.homeworld.replace("https://swapi.dev/api/", "")}</span>
+            <span className=" flex gap-3">Films: {selectedPerson?.films.map((film) => {
+              return (
+                <span>{film.replace("https://swapi.dev/api/", "")}</span>
+              )
+            })}</span>
+            <span className=" flex gap-3">
+              Species: {selectedPerson?.species.length > 0
+                ? selectedPerson?.species.map((specie) => {
+                  return (
+                    <span>{specie.replace("https://swapi.dev/api/", "")}</span>
+                  )
+                })
+                : <span>n/a</span>
+              }
+            </span>
+            <span className="flex gap-3">
+              Vehicles: {selectedPerson?.vehicles.length > 0
+                ? selectedPerson?.vehicles.map((vehicle) => {
+                  return (
+                    <span>{vehicle.replace("https://swapi.dev/api/", "")}</span>
+                  )
+                })
+                : <span>n/a</span>
+              }
+            </span>
+            <span className="flex gap-3">
+              Starships: {selectedPerson?.starships.length > 0
+                ? selectedPerson?.starships.map((starship) => {
+                  return (
+                    <span>{starship.replace("https://swapi.dev/api/", "")}</span>
+                  )
+                })
+                : <span>n/a</span>
+              }
+            </span>
+          </div>
+        </DetailsModal>
+      )}
     </div>
   )
 }
